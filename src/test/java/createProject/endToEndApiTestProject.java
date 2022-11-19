@@ -18,6 +18,7 @@ public class endToEndApiTestProject {
     String Id;
     String userId;
     Map<String, Object> variables;
+    Response response;
 
     // In TestNG what is one of the annotations that allows us to runs the Tests before each Test
     @BeforeTest
@@ -43,7 +44,7 @@ public class endToEndApiTestProject {
 
     @Test
     public void memberOf(){
-        Response response = RestAssured.given()
+        response = RestAssured.given()
                 .header("Authorization",token())
                 .when()
                 .get(memberOf)
@@ -78,11 +79,61 @@ public class endToEndApiTestProject {
     }
     @Test(dependsOnMethods = {"memberOf"})
     public void createProject(){
-        String requestBody = "{\"id\":\"\",\"created\":\"2022-11-09T01:58:29.666Z\",\"lastModified\":\"2001-11-09T01:58:29.666Z\",\"userId\":\"00000\",\"workspaceId\":\"00000\",\"name\":\"request1beforeupdate\",\"description\":\"requestnumber1\",\"type\":\"DESIGN\",\"tags\":[]}";
         System.out.println(variables.get("id"));
+        System.out.println(variables.get("userID"));
 
+        // Provide Json Payload in String format
+        String requestBody = "{\"id\":\"\",\"created\":\"2022-11-09T01:58:29.666Z\",\"lastModified\":\"2001-11-09T01:58:29.666Z\",\"userId\":\""+variables.get("userID")+"\",\"workspaceId\":\""+variables.get("id")+"\",\"name\":\"I did not get the shoes\",\"description\":\"sdfasdfasd\",\"type\":\"DESIGN\",\"tags\":[]}";
+
+        System.out.println(requestBody);
+        response = RestAssured.given()
+                .headers("Content-type","application/json")
+                .header("Authorization",token())
+                .and()
+                .body(requestBody)
+                .when()
+                .post("/design/projects")
+                .then().log().all()
+                .extract()
+                .response();
+
+        //Task Assert Name and Description:
+        Assert.assertEquals("I did not get the shoes",response.jsonPath().getString("name"));
+        Assert.assertEquals("sdfasdfasd",response.jsonPath().getString("description"));
+        System.out.print(response.jsonPath().getString("id"));
+        variables.put("projectId",response.jsonPath().getString("id"));
     }
 
+    @Test(dependsOnMethods = {"memberOf","createProject"})
+    public void updateProject(){
+        String updateProject = "{\"id\":\""+variables.get("projectId")+"\",\"created\":\"2022-11-09T01:58:29.666Z\",\"lastModified\":\"2001-11-09T01:58:29.666Z\",\"userId\":\""+variables.get("userID")+"\",\"workspaceId\":\""+variables.get("id")+"\",\"name\":\"I GOT THE SHOES :)\",\"description\":\"sdfasdfasd\",\"type\":\"DESIGN\",\"tags\":[]}";
 
+        System.out.println(updateProject);
 
+        RestAssured.given()
+                .header("Content-type", "application/json")
+                .header("Authorization", token())
+                .and()
+                .body(updateProject)
+                .when()
+                .put("/design/projects/"+variables.get("projectId"))
+                .then()
+                .log().all();
+    }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
