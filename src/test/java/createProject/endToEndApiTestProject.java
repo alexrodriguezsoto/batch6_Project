@@ -9,8 +9,7 @@ import org.testng.annotations.Test;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.apache.http.HttpStatus.SC_ACCEPTED;
-import static org.apache.http.HttpStatus.SC_OK;
+import static org.apache.http.HttpStatus.*;
 
 public class endToEndApiTestProject {
 
@@ -106,7 +105,7 @@ public class endToEndApiTestProject {
 
     @Test(dependsOnMethods = {"memberOf","createProject"})
     public void updateProject(){
-        String updateProject = "{\"id\":\""+variables.get("projectId")+"\",\"created\":\"2022-11-09T01:58:29.666Z\",\"lastModified\":\"2001-11-09T01:58:29.666Z\",\"userId\":\""+variables.get("userID")+"\",\"workspaceId\":\""+variables.get("id")+"\",\"name\":\"I GOT THE SHOES :)\",\"description\":\"sdfasdfasd\",\"type\":\"DESIGN\",\"tags\":[]}";
+        String updateProject = "{\"id\":\""+variables.get("projectId")+"\",\"created\":\"2022-11-09T01:58:29.666Z\",\"lastModified\":\"2001-11-09T01:58:29.666Z\",\"userId\":\""+variables.get("userID")+"\",\"workspaceId\":\""+variables.get("id")+"\",\"name\":\"@!#\",\"description\":\"sdfasdfasd\",\"type\":\"DESIGN\",\"tags\":[]}";
 
         System.out.println(updateProject);
 
@@ -119,6 +118,21 @@ public class endToEndApiTestProject {
                 .put("/design/projects/"+variables.get("projectId"))
                 .then()
                 .log().all();
+    }
+    @Test(dependsOnMethods = {"memberOf","createProject","updateProject"})
+    public void deleteProject(){
+        response =  RestAssured.given()
+                .header("Authorization",token())
+                .when()
+                .delete("/design/projects/"+variables.get("projectId"))
+                .then()
+                .log().all()
+                .extract()
+                .response();
+
+        //TASK to write an assertion to validate status code
+        System.out.println("Deleted project");
+        Assert.assertEquals(SC_NO_CONTENT,response.statusCode());
     }
 }
 
